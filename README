@@ -1,0 +1,3 @@
+= Mungr
+
+Mungr is a Ruby DSL that makes it easy to read one or more inputs, munge the data around, and write the results to one or more outputs.
