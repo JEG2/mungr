@@ -61,8 +61,7 @@ module Mungr
     # you a chance to do any needed cleanup.
     # 
     # When called without a block, this method actually runs the previously set
-    # code.  This is generally done as needed as you run the main stage and it's
-    # not recommended to call this method yourself.
+    # code.
     # 
     def finish(&code)
       load_or_run(:finish, &code)
@@ -80,7 +79,7 @@ module Mungr
     def load_or_run(name, &code)
       if code
         load_code(name, code)
-      elsif instance_variable_get("@#{name}_code")
+      else
         send("run_#{name}_code")
       end
     end
@@ -99,7 +98,7 @@ module Mungr
     # method returns.  Also flips the prepared?() status to +true+.
     # 
     def run_prepare_code
-      @context  = @prepare_code[]
+      @context  = @prepare_code ? @prepare_code[] : nil
       @prepared = true
       @context
     end
@@ -108,7 +107,9 @@ module Mungr
     # Executes the finish code.  Also flips the finished?() status to +true+.
     # 
     def run_finish_code
-      @finish_code[@context].tap { @finished = true }
+      result    = @finish_code ? @finish_code[@context] : nil
+      @finished = true
+      result
     end
   end
 end

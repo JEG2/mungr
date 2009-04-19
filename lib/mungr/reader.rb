@@ -24,8 +24,7 @@ module Mungr
     #     r.finish  { |f| f.close              }
     #   end
     # 
-    # All stages are optional, though a Reader isn't too handy without some
-    # read() code.
+    # The prepare() and finish() stages are optional.
     # 
     # Once built, you generally just call read() as long as it returns non-+nil+
     # data and process the values it returns, like this:
@@ -35,15 +34,9 @@ module Mungr
     #   end
     # 
     def initialize(*args, &init)
-      @read_code    = nil
-      @read         = false
+      @read_code = nil
       
       super
-    end
-    
-    # Returns +true+ if the read() code has been run, +false+ otherwise.
-    def read?
-      @read
     end
     
     #
@@ -70,23 +63,15 @@ module Mungr
     # 
     # This method is the primary interface for reading.  It will:
     # 
-    # * Return +nil+ if read?() is now +true+
+    # * Return +nil+ if finished?() is now +true+
     # * Run prepare() unless prepared?() is now +true+
     # * Run the read code to generate one chunk of data and return that result
     # * Run finish() just before returning the first +nil+
     # 
-    # This method will also flip read?() to +true+ as the first +nil+ is
-    # returned.
-    # 
     def run_read_code
-      return nil if read?
+      return nil if finished?
       prepare unless prepared?
-      @read_code[@context].tap { |this_read|
-        if this_read.nil?
-          @read = true
-          finish
-        end
-      }
+      @read_code[@context].tap { |this_read| finish if this_read.nil? }
     end
   end
 end

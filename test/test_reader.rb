@@ -9,13 +9,6 @@ class TestReader < MiniTest::Unit::TestCase
   ### Status ###
   ##############
   
-  def test_a_new_reader_is_not_prepared_read_or_finished
-    reader
-    assert(!@reader.prepared?, "A new Reader was already prepared?().")
-    assert(!@reader.read?,     "A new Reader was already read?().")
-    assert(!@reader.finished?, "A new Reader was already finished?().")
-  end
-  
   def test_a_reader_is_prepared_before_the_first_read
     order = Array.new
     reader do |r|
@@ -29,7 +22,7 @@ class TestReader < MiniTest::Unit::TestCase
     assert_equal([:prepared, :read], order)
   end
   
-  def test_exhausting_a_reader_sets_read_and_finished
+  def test_exhausting_a_reader_sets_finished
     order = Array.new
     reader do |r|
       r.read {
@@ -38,11 +31,9 @@ class TestReader < MiniTest::Unit::TestCase
       }
       r.finish { order << :finished }
     end
-    assert(!@reader.read?, "The Reader was read?() before being exhausted.")
     assert( !@reader.finished?,
             "The Reader was finished?() before being exhausted." )
     @reader.read
-    assert(@reader.read?, "The Reader was read?() after being exhausted.")
     assert( @reader.finished?,
             "The Reader was finished?() after being exhausted." )
     assert_equal([:read, :finished], order)
@@ -101,7 +92,7 @@ class TestReader < MiniTest::Unit::TestCase
         data.shift
       }
     end
-    @reader.read until @reader.read?
+    @reader.read until @reader.finished?
     assert_equal([:prepare, :read, :read, :read, :read], calls)
   end
   
