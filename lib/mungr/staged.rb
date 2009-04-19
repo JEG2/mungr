@@ -74,13 +74,13 @@ module Mungr
     #
     # Provides the dual code setting and running behavior of all stage methods.
     # If +code+ is non-+nil+ it will be passed on to load_code(), otherwise
-    # +name+ code will be run.
+    # +name+ code will be run.  Any +args+ will be forwarded to the run method.
     # 
-    def load_or_run(name, &code)
+    def load_or_run(name, *args, &code)
       if code
         load_code(name, code)
       else
-        send("run_#{name}_code")
+        send("run_#{name}_code", *args)
       end
     end
     

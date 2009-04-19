@@ -45,14 +45,16 @@ class TestReader < MiniTest::Unit::TestCase
   
   def test_any_value_returned_from_prepare_is_forwarded_to_read_and_finish
     object = Object.new
+    calls  = Array.new
     reader do |r|
       r.prepare { object }
       r.read    { |context|
-        assert_same(object, context)
+        calls << context
         nil  # signal that we are exhausted
       }
-      r.finish  { |context| assert_same(object, context) }
-    end.read
+      r.finish  { |context| calls << context }
+    end.read  # trigger read and finish code
+    assert_equal([object] * 2, calls)
   end
   
   ###############
