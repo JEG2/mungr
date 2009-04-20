@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-require "minitest/autorun"
+require "helper"
 
 require "mungr/writer"
 
@@ -13,7 +13,9 @@ class TestWriter < MiniTest::Unit::TestCase
     order = Array.new
     writer do |w|
       w.prepare { order << :prepared }
-      w.write   { order << :write    }
+      w.write   do
+        order << :write
+      end
     end
     assert(!@writer.prepared?, "The Writer was prepared?() before the write().")
     @writer.write("data")
@@ -30,9 +32,13 @@ class TestWriter < MiniTest::Unit::TestCase
     object = Object.new
     calls  = Array.new
     writer do |w|
-      w.prepare {           object           }
-      w.write   { |context| calls << context }
-      w.finish  { |context| calls << context }
+      w.prepare { object }
+      w.write   do |context|
+        calls << context
+      end
+      w.finish  do |context|
+        calls << context
+      end
     end
     @writer.write("data")  # trigger write code
     @writer.finish         # trigger finish code
@@ -47,7 +53,9 @@ class TestWriter < MiniTest::Unit::TestCase
     data     = (1..3).to_a
     written  = Array.new
     writer do |w|
-      w.write { |_, value| written << value }
+      w.write do |_, value|
+        written << value
+      end
     end
     data.each do |value|
       @writer.write(value)
@@ -59,20 +67,14 @@ class TestWriter < MiniTest::Unit::TestCase
     data  = (1..3).to_a
     calls = Array.new
     writer do |w|
-      w.prepare {            calls << :prepare }
-      w.write   { |_, value| calls << value    }
+      w.prepare { calls << :prepare }
+      w.write   do |_, value|
+        calls << value
+      end
     end
     data.each do |value|
       @writer.write(value)
     end
     assert_equal([:prepare] + data, calls)
-  end
-  
-  #######
-  private
-  #######
-  
-  def writer(&init)
-    @writer = Mungr::Writer.new(&init)
   end
 end

@@ -19,9 +19,15 @@ module Mungr
     # three code stages, something like:
     # 
     #   file_reader = Reader.new do |r|
-    #     r.prepare { File.open("my_file.txt") }
-    #     r.read    { |f| f.gets               }
-    #     r.finish  { |f| f.close              }
+    #     r.prepare {
+    #       File.open("my_file.txt")
+    #     }
+    #     r.read    {  |f|
+    #       f.gets
+    #     }
+    #     r.finish  do |f|
+    #       f.close
+    #     end
     #   end
     # 
     # The prepare() and finish() stages are optional.

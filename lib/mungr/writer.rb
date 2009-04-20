@@ -18,9 +18,15 @@ module Mungr
     # three code stages, something like:
     # 
     #   file_writer = Writer.new do |w|
-    #     w.prepare {           File.open("my_file.txt", "w") }
-    #     w.write   { |f, line| f.puts line                   }
-    #     w.finish  { |f|       f.close                       }
+    #     w.prepare {
+    #       File.open("my_file.txt", "w")
+    #     }
+    #     w.write   do |f, line|
+    #       f.puts line
+    #     end
+    #     w.finish  do |f|
+    #       f.close
+    #     end
     #   end
     # 
     # The prepare() and finish() stages are optional.
@@ -41,7 +47,7 @@ module Mungr
     
     #
     # :call-seq:
-    #   write() { |context| code_to_read_one_chunk_of_data() }
+    #   write() { |context, data| code_to_write_one_chunk_of_data(data) }
     #   write(*output)
     # 
     # If passed a block, this method sets the code that will be used to write a

@@ -107,9 +107,8 @@ module Mungr
     # Executes the finish code.  Also flips the finished?() status to +true+.
     # 
     def run_finish_code
-      result    = @finish_code ? @finish_code[@context] : nil
+      @finish_code ? @finish_code[@context] : nil
       @finished = true
-      result
     end
   end
 end

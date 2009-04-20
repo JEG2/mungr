@@ -1,6 +1,6 @@
 # encoding: UTF-8
 
-require "minitest/autorun"
+require "helper"
 
 require "mungr/reader"
 
@@ -25,18 +25,20 @@ class TestReader < MiniTest::Unit::TestCase
   def test_exhausting_a_reader_sets_finished
     order = Array.new
     reader do |r|
-      r.read {
+      r.read   {
         order << :read
         nil  # signal that we are exhausted
       }
-      r.finish { order << :finished }
+      r.finish do
+        order << :finish
+      end
     end
     assert( !@reader.finished?,
             "The Reader was finished?() before being exhausted." )
     @reader.read
     assert( @reader.finished?,
-            "The Reader was finished?() after being exhausted." )
-    assert_equal([:read, :finished], order)
+            "The Reader was not finished?() after being exhausted." )
+    assert_equal([:read, :finish], order)
   end
   
   ###############
@@ -52,7 +54,9 @@ class TestReader < MiniTest::Unit::TestCase
         calls << context
         nil  # signal that we are exhausted
       }
-      r.finish  { |context| calls << context }
+      r.finish  do |context|
+        calls << context
+      end
     end.read  # trigger read and finish code
     assert_equal([object] * 2, calls)
   end
@@ -106,19 +110,13 @@ class TestReader < MiniTest::Unit::TestCase
         calls << :read
         data.shift
       }
-      r.finish  { calls << :finish }
+      r.finish  do
+        calls << :finish
+      end
     end
     5.times do
       @reader.read
     end
     assert_equal([:read, :read, :read, :read, :finish], calls)
-  end
-  
-  #######
-  private
-  #######
-  
-  def reader(&init)
-    @reader = Mungr::Reader.new(&init)
   end
 end
