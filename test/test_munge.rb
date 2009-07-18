@@ -11,7 +11,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_a_munge_is_prepared_before_the_first_munge
     order = Array.new
-    munge do |m|
+    munger do |m|
       m.prepare { order << :prepared }
       m.munge   do
         order << :munge
@@ -30,7 +30,7 @@ class TestMunge < MiniTest::Unit::TestCase
       [[1, 2, 3]],
       [[1], [1, 2, 3], [1, 2]] ].each do |test_readers|
       order = Array.new
-      munge do |m|
+      munger do |m|
         m.munge  do
           order << :munge
         end
@@ -58,7 +58,7 @@ class TestMunge < MiniTest::Unit::TestCase
   def test_any_value_returned_from_prepare_is_forwarded_to_munge_and_finish
     object = Object.new
     calls  = Array.new
-    munge do |m|
+    munger do |m|
       m.prepare { object }
       m.munge   do |context, _|
         calls << context
@@ -78,7 +78,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_add_reader_associates_input_sources_for_the_munge
     args = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do |_, i, l|
         args << [i, l]
       end
@@ -90,7 +90,7 @@ class TestMunge < MiniTest::Unit::TestCase
   end
   
   def test_adding_a_munge_after_a_reader_is_an_error
-    munge
+    munger
     add_reader                             # add a normal Reader
     assert_raises(RuntimeError) do
       @munge.add_reader(Mungr::Munge.new)  # add a Munge
@@ -98,7 +98,7 @@ class TestMunge < MiniTest::Unit::TestCase
   end
   
   def test_adding_any_kind_of_reader_after_a_munge_is_an_error
-    munge
+    munger
     @munge.add_reader(Mungr::Munge.new)    # add a Munge
     assert_raises(RuntimeError) do
       @munge.add_reader(Mungr::Munge.new)  # can't add another
@@ -114,7 +114,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_add_writer_associates_output_sources_for_the_munge
     args = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do |_, i|
         i
       end
@@ -137,7 +137,7 @@ class TestMunge < MiniTest::Unit::TestCase
   end
   
   def test_a_munge_with_a_writer_cannot_be_used_as_a_reader
-    chain = munge
+    chain = munger
     add_writer  # can no longer be used as a Reader
     munge
     assert_raises(RuntimeError) do
@@ -152,7 +152,7 @@ class TestMunge < MiniTest::Unit::TestCase
   def test_calling_munge_a_with_block_sets_the_code_and_further_calls_run_it
     data    = (1..3).to_a
     written = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do |_, i|
          i * 2
       end
@@ -169,7 +169,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_each_input_is_passed_as_an_argument_to_munge
     args = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do |_, i, l|
         args << [i, l]
       end
@@ -182,7 +182,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_each_value_returned_from_munge_is_passed_as_an_argument_to_write
     args = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do |_, i|
         [i, i * 2, i * 3]
       end
@@ -199,7 +199,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_when_readers_are_exhausted_no_more_munges_or_writes_are_made
     calls = Array.new
-    munge do |m|
+    munger do |m|
       m.munge do
         calls << :munge
       end
@@ -218,7 +218,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_prepare_is_called_once_before_the_first_munge
     calls = Array.new
-    munge do |m|
+    munger do |m|
       m.prepare { calls << :prepare }
       m.munge   do
         calls << :munge
@@ -231,7 +231,7 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_finish_is_called_once_when_the_input_is_exhausted
     calls = Array.new
-    munge do |m|
+    munger do |m|
       m.munge  do
         calls << :munge
       end
@@ -245,7 +245,7 @@ class TestMunge < MiniTest::Unit::TestCase
   end
   
   def test_finish_is_forwarded_to_all_writers
-    munge do |m|
+    munger do |m|
       m.munge do
         # do nothing:  just defining some munge code
       end
@@ -277,13 +277,13 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_a_munge_can_read_form_another_munge
     args  = Array.new
-    chain = munge do |m|
+    chain = munger do |m|
       m.munge do |_, i|
         i * 2
       end
     end
     add_reader(1, 2, 3)
-    munge do |m|
+    munger do |m|
       m.munge do |_, i2|
         args << i2
       end
@@ -295,13 +295,13 @@ class TestMunge < MiniTest::Unit::TestCase
   
   def test_a_munge_can_be_a_multireader_source_form_another_munge
     args  = Array.new
-    chain = munge do |m|
+    chain = munger do |m|
       m.munge do |_, i|
         [i, i * 2, i * 3]
       end
     end
     add_reader(1, 2, 3)
-    munge do |m|
+    munger do |m|
       m.munge do |_, i, i2, i3|
         args << [i, i2, i3]
       end
@@ -314,14 +314,14 @@ class TestMunge < MiniTest::Unit::TestCase
   def test_finish_is_forwarded_through_chained_munges
     written =  Array.new
     chain   =  Array.new
-    chain   << munge do |m|
+    chain   << munger do |m|
       m.munge do |_, i, l|
         [i, i * 2, l]
       end
     end
     chain << add_reader(1, 2, 3).last
     chain << add_reader(:a, :b).last
-    chain << munge do |m|
+    chain << munger do |m|
       m.munge do |_, i, i2, l|
         "#{l}: #{i} * 2 = #{i2}"
       end
@@ -341,17 +341,10 @@ class TestMunge < MiniTest::Unit::TestCase
   #######
   private
   #######
-  
-  def munge(&init)
-    @munge = Mungr::Munge.new(&init)
-  end
-  
+
   def add_reader(*inputs, &init)
     (@readers ||= Array.new) <<
-      ( inputs.empty? ? reader(&init) :
-                        reader { |r| r.read { inputs.shift } } ).tap { |r|
-        @munge.add_reader(r)
-      }
+      reader(*inputs, &init).tap { |r| @munge.add_reader(r) }
   end
   
   def add_writer(&init)
