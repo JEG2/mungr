@@ -1,3 +1,11 @@
 = Mungr
 
 Mungr is a Ruby DSL that makes it easy to read one or more inputs, munge the data around, and write the results to one or more outputs.
+
+Update:  The goal is to build a nice DSL, and a command-line program that wraps that, for expressing inputs, outputs, and munging operations.  However, the current implementation is flawed.
+
+A munger needs to be less tied to the readers and writers.  Currently a munger cannot send more data down to the writers than it receives from readers and each invocation requires a pull from the readers.  This makes it impossible to do something simple like read a list of files from a directory but generate lines of input from each of those files.
+
+Another issue is that the roles are very locked in.  Reading stock information from a CSV file could handle the CSV conversion as a reader while reading from a URL would require a munge level conversion.  This raises the barrier of entry for adding new capabilities to the system.
+
+This needs to be fixed implementation wise and I believe the right approach is to base the system on something like Ruby 1.9's Enumerator or Fiber and just define a minimal interface for pipelining them to each other.
